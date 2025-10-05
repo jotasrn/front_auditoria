@@ -1,59 +1,90 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Login } from './components/Login';
-import { Dashboard } from './components/Dashboard';
 import { AutosInfracaoList } from './components/AutosInfracaoList';
 import { AutoInfracaoForm } from './components/AutoInfracaoForm';
+import { Profile } from './components/Profile';
+import { AutoInfracaoView } from './components/AutoInfracaoView';
+import { BottomNav } from './components/BottomNav'; // Importe o menu
+import { InDevelopment } from './components/InDevelopment'; // Importe a tela placeholder
+
+type StpcPage = 'list' | 'view' | 'form';
+type MainTab = 'stpc' | 'taxi' | 'stip' | 'pirataria' | 'perfil';
 
 function AppContent() {
-  const { user, loading } = useAuth();
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'autos-list' | 'autos-form'>('dashboard');
+  const { user } = useAuth();
+  
+  // Controle de Navegação Principal
+  const [activeTab, setActiveTab] = useState<MainTab>('stpc');
+  
+  // Controle de Navegação dentro da aba STPC
+  const [stpcPage, setStpcPage] = useState<StpcPage>('list');
+  const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-white"></div>
-          <p className="mt-4 text-white font-semibold text-lg">Carregando...</p>
-        </div>
-      </div>
-    );
+  useEffect(() => {
+    if (!user) {
+      setActiveTab('stpc'); // Reseta a aba ao deslogar
+      setStpcPage('list');
+    }
+  }, [user]);
+  
+  const handleSelectAudit = (auditId: string) => {
+    setSelectedAuditId(auditId);
+    setStpcPage('view');
+  };
+  
+  const handleEditAudit = (auditId: string) => {
+    setSelectedAuditId(auditId);
+    setStpcPage('form');
+  };
+  
+  const handleNewAudit = () => {
+    setSelectedAuditId(null);
+    setStpcPage('form');
+  };
+
+  const renderStpcPage = () => {
+    switch (stpcPage) {
+      case 'view':
+        return <AutoInfracaoView auditId={selectedAuditId!} onBack={() => setStpcPage('list')} onEdit={handleEditAudit} />;
+      case 'form':
+        return <AutoInfracaoForm onBack={() => setStpcPage('list')} auditId={selectedAuditId} />;
+      case 'list':
+      default:
+        return <AutosInfracaoList onBack={() => {}} onNew={handleNewAudit} onSelect={handleSelectAudit} />;
+    }
   }
+
+  const renderMainContent = () => {
+    switch (activeTab) {
+      case 'stpc':
+        return renderStpcPage();
+      case 'perfil':
+        return <Profile onBack={() => setActiveTab('stpc')} />;
+      case 'taxi':
+      case 'stip':
+      case 'pirataria':
+        return <InDevelopment />;
+      default:
+        return <div />;
+    }
+  };
 
   if (!user) {
     return <Login />;
   }
 
-  const handleNavigate = (page: string) => {
-    if (page === 'autos-infracao') {
-      setCurrentPage('autos-list');
-    }
-  };
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'autos-list':
-        return (
-          <AutosInfracaoList
-            onBack={() => setCurrentPage('dashboard')}
-            onNew={() => setCurrentPage('autos-form')}
-          />
-        );
-      case 'autos-form':
-        return (
-          <AutoInfracaoForm
-            onBack={() => setCurrentPage('autos-list')}
-          />
-        );
-      default:
-        return <Dashboard onNavigate={handleNavigate} />;
-    }
-  };
-
-  return renderPage();
+  return (
+    <div className="relative min-h-screen">
+      <main className="pb-16">
+        {renderMainContent()}
+      </main>
+      <BottomNav activeTab={activeTab} onNavigate={(tab) => setActiveTab(tab as MainTab)} />
+    </div>
+  );
 }
 
-function App() {
+export function App() {
   return (
     <AuthProvider>
       <AppContent />
