@@ -1,4 +1,4 @@
-import { FileText, Car, Ban, User, AlertTriangle } from 'lucide-react';
+import { FileText, Car, Ban, User, AlertTriangle, Home } from 'lucide-react'; // Adicione Home
 
 interface BottomNavProps {
   activeTab: string;
@@ -6,6 +6,8 @@ interface BottomNavProps {
 }
 
 const navItems = [
+  // Novo item "Início"
+  { id: 'inicio', label: 'Início', icon: Home }, 
   { id: 'stpc', label: 'STPC', icon: AlertTriangle },
   { id: 'taxi', label: 'Táxi', icon: Car },
   { id: 'stip', label: 'STIP', icon: FileText },
@@ -16,7 +18,7 @@ const navItems = [
 export function BottomNav({ activeTab, onNavigate }: BottomNavProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white shadow-top border-t border-slate-200 z-50">
-      <div className="max-w-4xl mx-auto flex justify-around items-center">
+      <div className="max-w-4xl mx-auto flex justify-around items-stretch">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
           return (

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Save, Trash2, Mic, Paperclip, Eye, X as CloseIcon, Camera, Image as ImageIcon, FileText, Send } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Paperclip, Eye, X as CloseIcon, Camera, Image as ImageIcon, FileText, Send } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getAuditById, saveAudit } from '../lib/storage';
 import { mockVehicles, mockLinhas, mockPrepostos, mockInfracoes } from '../lib/mock-data';
@@ -100,7 +100,7 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
       <input type="file" ref={galleryInputRef} className="hidden" accept="image/*" multiple onChange={handleFileChange} />
       <input type="file" ref={pdfInputRef} className="hidden" accept=".pdf" multiple onChange={handleFileChange} />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-28 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6">
         <FormSection title="Auto de Infração – STPC">
           <input type="text" placeholder="Número do Auto" value={formData.numero} onChange={e => setFormData({ ...formData, numero: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
           <input type="text" placeholder="Ordem de Serviço de Auditoria Fiscal" value={formData.ordem_servico} onChange={e => setFormData({ ...formData, ordem_servico: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
@@ -147,14 +147,19 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
           <select value={formData.infracao_id} onChange={e => setFormData({ ...formData, infracao_id: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500"><option value="">Selecione a Infração</option>{infracoes.map(i => (<option key={i.id} value={i.id}>{i.codigo} - {i.descricao}</option>))}</select>
           <textarea placeholder="Descrição do Fato..." value={formData.descricao_fato} onChange={e => setFormData({ ...formData, descricao_fato: e.target.value })} rows={4} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
         </FormSection>
-      </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm shadow-top p-3 border-t border-slate-200 z-40">
-        <div className="max-w-4xl mx-auto flex gap-3 items-center">
-            <div className="p-3 bg-slate-100 rounded-xl"><p className="text-xs font-bold text-slate-700">Situação: <span className="font-mono">{formData.situacao}</span></p></div>
-            <button onClick={() => handleAction('save')} disabled={loading} className="flex-1 bg-slate-700 text-white py-3 rounded-xl font-semibold transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"><Save className="w-5 h-5" /> Salvar</button>
-            <button onClick={() => handleAction('send')} disabled={loading} className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"><Send className="w-5 h-5" /> Enviar</button>
-            {!isNew && (<button className="p-3 bg-red-600 text-white rounded-xl font-semibold transition active:scale-95"><Trash2 className="w-5 h-5" /></button>)}
+        {/* Rodapé com botões, agora como a última seção do conteúdo */}
+        <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between"><span className="text-sm font-semibold text-slate-600">Situação do preenchimento</span><span className="text-sm font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-full">{formData.situacao}</span></div>
+            <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => handleAction('save')} disabled={loading} className="w-full bg-slate-700 text-white py-3 rounded-xl font-semibold transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"><Save className="w-5 h-5" /> Salvar</button>
+                <button onClick={() => handleAction('send')} disabled={loading} className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"><Send className="w-5 h-5" /> Enviar</button>
+            </div>
+            {!isNew && (
+                <button className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold transition active:scale-95 flex items-center justify-center gap-2">
+                    <Trash2 className="w-5 h-5" /> Excluir
+                </button>
+            )}
         </div>
       </div>
       

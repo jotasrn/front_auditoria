@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">semob-auditoria</string>
+    <string name="title_activity_main">semob-auditoria</string>
+    <string name="package_name">com.semob.auditoria</string>
+    <string name="custom_url_scheme">com.semob.auditoria</string>
+</resources>
