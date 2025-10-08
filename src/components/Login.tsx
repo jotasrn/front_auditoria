@@ -2,21 +2,26 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Lock, User } from 'lucide-react';
 import logoSemob from '../assets/images/logo.png';
+import { ErrorPopup, PopupType } from './ErrorPopup'; 
 
 export function Login() {
-  const [username, setUsername] = useState('DFT_GABRIELV'); 
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
+  
+  const [popup, setPopup] = useState<{ message: string; type: PopupType } | null>(null);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setPopup(null);
     try {
-
       await signIn(username, password);
+      setPopup({ message: 'Login realizado com sucesso!', type: 'success' });
     } catch (err: any) {
-      alert(err.message || 'Ocorreu um erro inesperado.');
+      setPopup({ message: err.message || 'Ocorreu um erro inesperado.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -35,6 +40,7 @@ export function Login() {
             <h1 className="text-3xl font-bold text-white mb-2">SEMOB</h1>
             <p className="text-slate-200 text-sm font-medium">Sistema de Auditoria</p>
           </div>
+
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Usuário</label>
@@ -50,6 +56,7 @@ export function Login() {
                 />
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Senha</label>
               <div className="relative">
@@ -64,6 +71,7 @@ export function Login() {
                 />
               </div>
             </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -74,6 +82,14 @@ export function Login() {
           </form>
         </div>
       </div>
+
+      {popup && (
+        <ErrorPopup
+          message={popup.message}
+          type={popup.type}
+          onClose={() => setPopup(null)}
+        />
+      )}
     </div>
   );
 }

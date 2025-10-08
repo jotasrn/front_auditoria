@@ -1,6 +1,7 @@
 import MD5 from 'crypto-js/md5';
 
 const BASE_URL = 'http://10.233.144.111:8080';
+const basicAuthCredentials = btoa('LEVEL_33:SEMOB_LEVEL_33_DESEN');
 
 export interface LoginResponse {
   success: boolean;
@@ -73,21 +74,22 @@ export const LoginService = {
     }
   },
 
-  getUsuarioId(): number | null {
-    const id = localStorage.getItem('userId');
-    return id ? parseInt(id, 10) : null;
-  },
-
-  getUsername(): string | null {
-    return localStorage.getItem('username');
-  },
-
-  logout(): void {
-    localStorage.removeItem('userId');
-    localStorage.removeItem('username');
-  },
-  
-  testMd5Conversion(password: string): string {
-    return this.convertToMd5Hex(password);
+  async getFuncionarioDetails(userId: number): Promise<any> {
+  const url = `${BASE_URL}/funcionario/${userId}`;
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${basicAuthCredentials}`,
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`Não foi possível buscar os dados do funcionário: ${response.status}`);
+    }
+      return await response.json();
+    } catch (error: any) {
+      console.error('Erro ao buscar detalhes do funcionário:', error);
+      throw error;
+    }
   },
 };
