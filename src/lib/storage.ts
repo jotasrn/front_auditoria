@@ -1,4 +1,4 @@
-import { mockAutos, mockUser } from './mock-data';
+import { mockAutos} from './mock-data';
 
 const AUDITS_STORAGE_KEY = 'semob_audits';
 const USER_STORAGE_KEY = 'semob_user';
@@ -33,17 +33,15 @@ export const saveAudit = (auditData: any): void => {
 };
 
 // --- Funções para Usuário ---
-
-export const getUser = (): any => {
+export const getUser = (): any | null => { 
     const data = localStorage.getItem(USER_STORAGE_KEY);
-    if (!data) {
-        // Se for a primeira vez, salva o mock user e o retorna
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        return mockUser;
-    }
-    return JSON.parse(data);
+    return data ? JSON.parse(data) : null;
 }
 
 export const saveUser = (userData: any): void => {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+}
+
+export const clearUser = (): void => {
+    localStorage.removeItem(USER_STORAGE_KEY);
 }
