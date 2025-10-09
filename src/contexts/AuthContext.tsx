@@ -1,64 +1,83 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { getUser, saveUser } from '../lib/storage'; // Importa as novas funções
+import { getUser, saveUser, clearUser } from '../lib/storage';
+import { apiService, FuncionarioDetalhe } from '../service/apiService.ts';
 
+// --- Interfaces de Tipagem ---
 interface User {
-  id: string;
-  email: string;
-  full_name: string;
-  sigla: string;
+    id: number;
+    full_name: string;
+    sigla: string;
 }
 
 interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  signIn: (user: string, pass: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  updateUser: (userData: User) => Promise<void>; // Nova função para atualizar o perfil
+    user: User | null;
+    loading: boolean;
+    signIn: (user: string, pass: string) => Promise<void>;
+    signOut: () => Promise<void>;
+    updateUser: (userData: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => getUser()); // Carrega o usuário do cache
-  const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState<User | null>(() => getUser());
+    const [loading, setLoading] = useState(false);
 
-  const signIn = async (username: string, password: string) => {
-    setLoading(true);
-    return new Promise<void>((resolve, reject) => {
-      setTimeout(() => {
-        const storedUser = getUser();
-        if (username === storedUser.sigla && password === '123456') { // Login simples
-          setUser(storedUser);
-          setLoading(false);
-          resolve();
-        } else {
-          setLoading(false);
-          reject(new Error('Usuário ou senha incorretos'));
+    const signIn = async (username: string, password: string) => {
+        setLoading(true);
+        
+        try {
+            const loginResponse = await apiService.login(username, password);
+            const userId = loginResponse.data.id_usuario;
+            const funcDetailsArray = await apiService.getFuncionarioDetails(userId);
+            const funcDetails = funcDetailsArray[0];
+            if (!funcDetails) {
+                 throw new Error(`Detalhes do funcionário não encontrados.`);
+            }
+
+            const nomeCompleto = funcDetails.NomeFuncionario ? String(funcDetails.NomeFuncionario).trim() : '';
+            const newUser: User = {
+                id: userId,
+                full_name: nomeCompleto, 
+                sigla: username, 
+            };
+
+            saveUser(newUser); 
+            setUser(newUser);
+            
+        } catch (error: any) {
+            const errorMessage = error.message || 'Erro desconhecido.';
+            console.error('Erro no login:', errorMessage, error.response?.data);
+            throw new Error(errorMessage);
+            
+        } finally {
+            setLoading(false);
         }
-      }, 1000);
-    });
-  };
+    };
 
-  const signOut = async () => {
-    setUser(null); // Para o protótipo, apenas desloga
-  };
+    /** Realiza o logout: limpa o estado e o cache local. */
+    const signOut = async () => {
+        setUser(null);
+        clearUser();
+    };
 
-  const updateUser = async (userData: User) => {
-    saveUser(userData); // Salva no cache
-    setUser(userData); // Atualiza o estado global
-  }
+    /** Atualiza o objeto do usuário no contexto e no cache. */
+    const updateUser = async (userData: User) => {
+        saveUser(userData);
+        setUser(userData);
+    }
 
-  return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut, updateUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={{ user, loading, signIn, signOut, updateUser }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+    }
+    return context;
 }

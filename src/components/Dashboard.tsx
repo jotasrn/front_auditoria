@@ -1,12 +1,12 @@
-import { 
-  AlertTriangle, 
-  File as Edit, 
-  Car, 
-  User, 
+import {
+  AlertTriangle,
+  File as Edit,
+  Car,
+  User,
   Lock,
-  MessageSquare,      // Novo ícone
-  Grid2x2 as Grid,      // Novo ícone
-  ClipboardCheck      // Novo ícone
+  MessageSquare,
+  Grid2x2 as Grid,
+  ClipboardCheck
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -35,12 +35,20 @@ export function Dashboard({ onNavigate }: DashboardProps) {
     return 'Boa noite';
   };
 
+  // Função para obter apenas o primeiro nome de forma segura
+  const getFirstName = () => {
+    // user?.full_name? -> garante que user E full_name existem antes de chamar split()
+    return user?.full_name?.split(' ')[0] || user?.sigla || 'Usuário';
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 rounded-2xl p-6 mb-6 shadow-xl relative overflow-hidden">
           <div className="relative">
-            <h2 className="text-2xl font-bold text-white mb-1">{getGreeting()}, {user?.full_name.split(' ')[0] || 'Usuário'}</h2>
+            <h2 className="text-2xl font-bold text-white mb-1">
+              {getGreeting()}, {getFirstName()}
+            </h2>
             <p className="text-slate-200 font-medium">{user?.sigla || 'Usuário'}</p>
           </div>
         </div>
