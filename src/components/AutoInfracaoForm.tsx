@@ -45,7 +45,7 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
 
     // Valores iniciais vazios, exceto data e hora.
     const initialFormData = {
-        id: '', numero: '', // Número do Auto removido da entrada
+        id: '', numero: '', 
         tipo: 'STPC', ordem_servico: '', 
         data_infracao: new Date().toISOString().split('T')[0],
         hora_infracao: new Date().toTimeString().slice(0, 5),
@@ -72,7 +72,8 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
         try {
             const [linhasData, prepostosData] = await Promise.all([
                 apiService.getLinhas(operadoraSiglaServico, dataFiltro),
-                apiService.getPrepostos(operadoraSiglaServico) 
+                apiService.getPrepostos(operadoraSiglaServico)
+
             ]);
             setLinhas(linhasData);
             setPrepostos(prepostosData);
@@ -304,7 +305,6 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
             }];
 
             const createResponse = await apiService.createAuto(preAutosPayload, documentoPayload, firstAttachment);
-            const sendSeiResponse = await apiService.sendToSEI(user.id);
 
             const dataToSave = { 
                 ...formData, 

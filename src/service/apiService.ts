@@ -30,6 +30,7 @@ export interface Veiculo {
 
 export interface Linha {
     id: number;
+    nomeOperadora: string;
     cdLinha: string;
     denominacaoLinha: string;
 }

@@ -15,7 +15,7 @@ export const mockInitialUser: StoredUser = {
     sigla: 'GUEST'
 };
 
-// --- Funções para Auditorias ---
+// --- Funções para Auditorias ----
 
 export const getAudits = (): any[] => {
     const data = localStorage.getItem(AUDITS_STORAGE_KEY);
