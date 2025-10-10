@@ -1,4 +1,4 @@
-import { ArrowLeft, User, Mail, Briefcase, RefreshCw, LogOut } from 'lucide-react';
+import { ArrowLeft, User, Briefcase, RefreshCw, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import { apiService, FuncionarioDetalhe } from '../service/apiService.ts'; 

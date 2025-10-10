@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { getUser, saveUser, clearUser } from '../lib/storage';
-import { apiService, FuncionarioDetalhe } from '../service/apiService.ts';
+import { apiService} from '../service/apiService.ts';
 
 // --- Interfaces de Tipagem ---
 interface User {
