@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, Save, Trash2, Paperclip, Eye, X as CloseIcon, Camera, Image as ImageIcon, FileText, Send } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getAuditById, saveAudit } from '../lib/storage';
-import { apiService, Veiculo, Linha, Preposto, Infracao, Operadora, PreAutoData, DocumentoData, Localidade } from '../service/apiService.ts'; 
+import { apiService, Veiculo, Linha, Preposto, Infracao, Operadora, PreAutoData, DocumentoData, Localidade } from '../service/apiService'; 
 import { ErrorPopup, PopupType } from './ErrorPopup'; 
 
 // --- Interfaces e Tipos ---
@@ -32,7 +32,7 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
     const [vehicles, setVehicles] = useState<Veiculo[]>([]);
     const [linhas, setLinhas] = useState<Linha[]>([]);
     const [prepostos, setPrepostos] = useState<Preposto[]>([]);
-    const [infracoes, setInfracoes] = useState<Infracao[]>([]);
+    const [infracoes, setInfracoes] = useState<Infracao[]>([]); 
     const [localidades, setLocalidades] = useState<Localidade[]>([]); 
 
     // Estados para anexos e modais
@@ -47,11 +47,11 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
     const initialFormData = {
         id: '', numero: '', 
         tipo: 'STPC', ordem_servico: '', 
-        data_infracao: new Date().toISOString().split('T')[0],
-        hora_infracao: new Date().toTimeString().slice(0, 5),
+        data_infracao: new Date().toISOString().split('T')[0], 
+        hora_infracao: new Date().toTimeString().slice(0, 5), 
         sigla_operador: '', nome_operador: '', sigla_servico: '',
         vehicle_id: '', numero_veiculo: '', placa: '', marca_modelo: '', cor: '', ano_fabricacao: '', 
-        preposto_id: '', nome_preposto: '', numero_preposto: '', linha_id: '', codigo_linha: '', denominacao_linha: '',
+        preposto_id: '', nome_preposto: '', numero_preposto: '', linha_id: '', codigo_linha: '', denominacao_linha: '', 
         regiao_administrativa: '', local_infracao: '', infracao_id: '', descricao_fato: '', situacao: 'Em andamento', 
         created_at: new Date().toISOString(), attachment_names: [] as string[],
         
@@ -61,19 +61,19 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
         id_localidade: 0,
         latitude: -15.799, 
         longitude: -47.864,
+        localidade_descricao: '', // Campo para exibir o nome da RA selecionada
     };
     const [formData, setFormData] = useState(initialFormData);
 
     // --- Funções de Carregamento de Dados de Apoio ---
     
-    // Função para carregar os dados que dependem da Operadora (siglaServico) e da Data
+    // Carrega dados que dependem da Operadora (siglaServico) e da Data
     const loadDependentData = useCallback(async (operadoraSiglaServico: string, dataFiltro: string) => {
         setIsDataLoading(true);
         try {
             const [linhasData, prepostosData] = await Promise.all([
                 apiService.getLinhas(operadoraSiglaServico, dataFiltro),
-                apiService.getPrepostos(operadoraSiglaServico)
-
+                apiService.getPrepostos(operadoraSiglaServico) 
             ]);
             setLinhas(linhasData);
             setPrepostos(prepostosData);
@@ -87,22 +87,20 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
         }
     }, []);
 
-    // Função para carregar dados gerais (Operadoras filtradas por Data + Veículos/Localidades/Infrações)
+    // Carrega dados gerais (Operadoras filtradas por Data + Veículos/Localidades/Infrações)
     const loadSupportData = useCallback(async (dataFiltro: string) => {
         setIsDataLoading(true);
         try {
-            // 1. Busca Operadoras FILTRADAS PELA DATA
             const ops = await apiService.getOperadoras(dataFiltro);
             setOperadoras(ops);
             
-            // 2. Busca Veículos, Infrações e Localidades
             const [vehiclesData, infracoesData, localidadesData] = await Promise.all([
                 apiService.getVeiculos(),
-                apiService.getInfracoes(),
+                apiService.getInfracoes(), 
                 apiService.getLocalidades(),
             ]);
             setVehicles(vehiclesData);
-            setInfracoes(infracoesData);
+            setInfracoes(infracoesData); 
             setLocalidades(localidadesData);
 
         } catch (error: any) {
@@ -137,43 +135,42 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
     // --- Handlers de Mudança de Formulário e Filtros ---
 
     const handleDateChange = (date: string) => {
-        // 1. Atualiza a data no formulário e limpa dados dependentes
         setFormData(prev => ({ 
             ...prev, 
             data_infracao: date,
             sigla_operador: '', nome_operador: '', 
             linha_id: '', preposto_id: '', 
             id_permissao: 0, id_perm_vei: 0,
+            localidade_descricao: '', // Limpa a descrição da localidade ao mudar a data
         }));
-        // 2. Recarrega as Operadoras filtradas pela nova data
+        // CORREÇÃO: Força o recarregamento das operadoras com a nova data
         loadSupportData(date);
     }
     
-    // CORREÇÃO: Usa o idPermissao para o valor do select e a siglaServico para o filtro dependente
     const handleOperadoraSelect = (idPermissaoString: string) => {
         const idPermissao = parseInt(idPermissaoString);
         const selectedOp = operadoras.find(o => o.idPermissao === idPermissao);
         
-        // 1. Resetar filtros dependentes e setar a Operadora
+        if (!selectedOp) {
+             setFormData(prev => ({ ...prev, sigla_operador: '', nome_operador: '', sigla_servico: '', id_permissao: 0, linha_id: '', preposto_id: '', vehicle_id: '' }));
+             setLinhas([]);
+             setPrepostos([]);
+             return;
+        }
+
         setFormData(prev => ({
             ...prev,
-            // Usando siglaServico como chave de filtro para dependentes (Linhas, Prepostos)
-            sigla_operador: selectedOp?.siglaServico || '', 
-            nome_operador: selectedOp?.nomeOperadora || '',
-            // Setando o ID da Permissão (ID do Operador/Viação)
+            sigla_operador: selectedOp.siglaServico, 
+            nome_operador: selectedOp.nomeOperadora,
+            sigla_servico: selectedOp.siglaServico,
             id_permissao: idPermissao,
             linha_id: '', codigo_linha: '', denominacao_linha: '',
             preposto_id: '', nome_preposto: '', numero_preposto: '',
             vehicle_id: '', numero_veiculo: '', placa: '', marca_modelo: '', cor: '', ano_fabricacao: '', id_perm_vei: 0,
         }));
         
-        // 2. Carrega dados dependentes, usando siglaServico
-        if (selectedOp && selectedOp.siglaServico) {
-            loadDependentData(selectedOp.siglaServico, formData.data_infracao); 
-        } else {
-            setLinhas([]);
-            setPrepostos([]);
-        }
+        // CORREÇÃO: Chama a função dependente para Linhas e Prepostos com os novos filtros
+        loadDependentData(selectedOp.siglaServico, formData.data_infracao); 
     }
 
     const handleVehicleSelect = (id: string) => { 
@@ -195,35 +192,48 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
         }
     }
     
-    const handlePrepostoSelect = (id: string) => { 
-        const idNum = parseInt(id);
-        const p = prepostos.find(i => i.id === idNum); 
+    const handlePrepostoSelect = (idPrepostoString: string) => { 
+        const idNum = parseInt(idPrepostoString);
+        const p = prepostos.find(i => i.idPreposto === idNum); 
         if (p) {
              setFormData(f => ({
                 ...f, 
-                preposto_id: id, 
-                nome_preposto: p.nome, 
-                numero_preposto: p.numeroRegPreposto,
+                preposto_id: idPrepostoString, 
+                // CORRIGIDO: NomePreposto é o nome, e idPreposto é o número de registro/ID
+                nome_preposto: p.NomePreposto, 
+                numero_preposto: String(p.idPreposto), 
             }));
         } else {
              setFormData(f => ({ ...f, preposto_id: '', nome_preposto: '', numero_preposto: '' }));
         }
     }
     
-    const handleLinhaSelect = (id: string) => { 
-        const idNum = parseInt(id);
-        const l = linhas.find(i => i.id === idNum); 
+    const handleLinhaSelect = (idLinhaString: string) => { 
+        const idNum = parseInt(idLinhaString);
+        const l = linhas.find(i => i.idLinha === idNum); 
         if (l) {
              setFormData(p => ({
                 ...p, 
-                linha_id: id, 
-                codigo_linha: l.cdLinha, 
+                linha_id: idLinhaString, 
+                codigo_linha: l.codigoLinha, 
                 denominacao_linha: l.denominacaoLinha,
-                id_permissao: l.id,
+                id_permissao: l.idLinha, // ID da permissão (linha)
             }));
         } else {
             setFormData(p => ({ ...p, linha_id: '', codigo_linha: '', denominacao_linha: '', id_permissao: 0 }));
         }
+    }
+
+    // CORREÇÃO: Handler para selecionar a Localidade/RA
+    const handleLocalidadeSelect = (idLocalidadeString: string) => {
+        const idLocalidade = parseInt(idLocalidadeString);
+        const selectedLoc = localidades.find(l => l.id === idLocalidade);
+
+        setFormData(prev => ({
+            ...prev,
+            id_localidade: idLocalidade,
+            localidade_descricao: selectedLoc?.descricao || '', // Salva a descrição para o placeholder/display
+        }));
     }
 
     // --- Lógica de Ação (Salvar Local e Enviar para API) ---
@@ -305,6 +315,9 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
             }];
 
             const createResponse = await apiService.createAuto(preAutosPayload, documentoPayload, firstAttachment);
+            const sendSeiResponse = await apiService.sendToSEI(user.id);
+
+            const numeroAutoGerado = createResponse.data?.numeroDocumento || 'N/A';
 
             const dataToSave = { 
                 ...formData, 
@@ -312,12 +325,13 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                 created_at: isNew ? new Date().toISOString() : formData.created_at, 
                 attachment_names: attachments.map(a => a.file.name), 
                 situacao: 'Enviado',
-                numero: createResponse.data.numeroAutoGerado || 'N/A', 
+                numero: numeroAutoGerado, 
             };
+            
+            setFormData(dataToSave);
             saveAudit(dataToSave);
             
-            setPopup({ message: 'Auto enviado e protocolado no SEI com sucesso!', type: 'success' });
-            onBack();
+            setPopup({ message: `Auto enviado e protocolado no SEI com sucesso! Número do Auto: ${numeroAutoGerado}`, type: 'success' });
             
         } catch (error: any) {
             console.error('Erro ao enviar Auto de Infração:', error.response?.data || error.message);
@@ -349,9 +363,11 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                 <FormSection title="Auto de Infração – STPC">
                     {/* Exibir o número do auto gerado/salvo como texto estático (Regra de Negócio) */}
                     {formData.numero && (
-                        <p className="text-sm font-semibold text-slate-700">
-                            Número do Auto: <span className="font-bold text-slate-900">{formData.numero}</span>
-                        </p>
+                        <div className="flex justify-center w-full pb-2">
+                            <span className="text-base font-bold text-blue-700 bg-blue-50 px-4 py-1.5 rounded-lg border border-blue-200">
+                                Nº {formData.numero}
+                            </span>
+                        </div>
                     )}
                     <input type="text" placeholder="Ordem de Serviço de Auditoria Fiscal" value={formData.ordem_servico} onChange={e => setFormData({ ...formData, ordem_servico: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
                 </FormSection>
@@ -383,7 +399,6 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                 {/* DADOS DA OPERADORA (Regra: Filtrado pela Data) */}
                 <FormSection title="Dados da Operadora (Viação)" isLoading={isDataLoading && operadoras.length === 0}>
                     <select 
-                        // O valor do select é o idPermissao (numérico)
                         value={formData.id_permissao || ''} 
                         onChange={e => handleOperadoraSelect(e.target.value)} 
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
@@ -394,7 +409,9 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                             <option key={op.idPermissao} value={op.idPermissao}>{op.siglaServico} - {op.nomeOperadora}</option>
                         ))}
                     </select>
+                    {/* Nome do Operador (Somente Leitura) */}
                     <input type="text" placeholder="Nome do Operador" value={formData.nome_operador} readOnly disabled className="w-full px-4 py-3 border-2 bg-gray-100 border-gray-200 rounded-xl" />
+                    {/* Sigla do Serviço (Somente Leitura, preenchido pelo handler) */}
                     <input type="text" placeholder="Sigla do Serviço" value={formData.sigla_servico} readOnly disabled className="w-full px-4 py-3 border-2 bg-gray-100 border-gray-200 rounded-xl" />
                 </FormSection>
                 
@@ -438,11 +455,11 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                          disabled={!formData.sigla_operador || isDataLoading}
                     >
                         <option value="">{formData.sigla_operador ? 'Selecione o Preposto *' : 'Selecione a Operadora primeiro'}</option>
-                        {prepostos.map(p => (<option key={p.id} value={p.id}>{p.nome} - {p.numeroRegPreposto}</option>))}
+                        {prepostos.map(p => (<option key={p.idPreposto} value={p.idPreposto}>{p.NomePreposto} - {p.idPreposto}</option>))}
                     </select>
                     {/* Campos de Preposto (mantidos) */}
-                    <input type="text" placeholder="Nome do Preposto" value={formData.nome_preposto} onChange={e => setFormData({ ...formData, nome_preposto: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
-                    <input type="text" placeholder="Número do Preposto" value={formData.numero_preposto} onChange={e => setFormData({ ...formData, numero_preposto: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+                    <input type="text" placeholder="Nome do Preposto" value={formData.nome_preposto} readOnly disabled className="w-full px-4 py-3 border-2 bg-gray-100 border-gray-200 rounded-xl" />
+                    <input type="text" placeholder="Número do Preposto" value={formData.numero_preposto} readOnly disabled className="w-full px-4 py-3 border-2 bg-gray-100 border-gray-200 rounded-xl" />
                 </FormSection>
                 
                 {/* DADOS DA LINHA (Regra: Filtrado pela Operadora e Data) */}
@@ -454,7 +471,7 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                          disabled={!formData.sigla_operador || isDataLoading}
                     >
                         <option value="">{formData.sigla_operador ? 'Selecione a Linha *' : 'Selecione a Operadora primeiro'}</option>
-                        {linhas.map(l => (<option key={l.id} value={l.id}>{l.cdLinha} - {l.denominacaoLinha}</option>))}
+                        {linhas.map(l => (<option key={l.idLinha} value={l.idLinha}>{l.codigoLinha} - {l.denominacaoLinha}</option>))}
                     </select>
                     {/* Campos de Linha (mantidos) */}
                     <input type="text" placeholder="Código da Linha" value={formData.codigo_linha} onChange={e => setFormData({ ...formData, codigo_linha: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
@@ -464,16 +481,18 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                 {/* DADOS QUE NÃO DEPENDEM DA OPERADORA */}
                 <FormSection title="Local da Infração">
                     <select 
-                        value={formData.id_localidade} 
-                        onChange={e => setFormData({ ...formData, id_localidade: parseInt(e.target.value) || 0 })} 
+                        // O valor selecionado é o ID (número)
+                        value={formData.id_localidade || ''} 
+                        onChange={e => handleLocalidadeSelect(e.target.value)} 
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     >
-                        <option value={0}>Região Administrativa (RA) *</option>
+                        <option value="">Região Administrativa (RA) *</option>
                         {localidades.map(loc => (
                             <option key={loc.id} value={loc.id}>{loc.descricao}</option>
                         ))}
                     </select>
-                    <input type="text" placeholder="Local da Infração (Ponto de Referência)" value={formData.local_infracao} onChange={e => setFormData({ ...formData, local_infracao: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+                    {/* O input agora usa o nome da RA selecionada no placeholder */}
+                    <input type="text" placeholder={`Local da Infração (Ponto de Ref. em ${formData.localidade_descricao || 'RA Selecionada'})`} value={formData.local_infracao} onChange={e => setFormData({ ...formData, local_infracao: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
                     <div className="grid md:grid-cols-2 gap-4">
                          <input type="number" placeholder="Latitude" value={formData.latitude} onChange={e => setFormData({ ...formData, latitude: parseFloat(e.target.value) || 0 })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
                         <input type="number" placeholder="Longitude" value={formData.longitude} onChange={e => setFormData({ ...formData, longitude: parseFloat(e.target.value) || 0 })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
@@ -487,7 +506,11 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     >
                         <option value="">Selecione a Infração *</option>
-                        {infracoes.map(i => (<option key={i.id} value={i.id}>{i.codigo} - {i.descricao}</option>))}
+                        {infracoes.map(i => (
+                            <option key={i.idInfracao} value={i.idInfracao}>
+                                {i.codigoInfracao} - {i.descricaoInfracao}
+                            </option>
+                        ))}
                     </select>
                     <textarea placeholder="Descrição do Fato..." value={formData.descricao_fato} onChange={e => setFormData({ ...formData, descricao_fato: e.target.value })} rows={4} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
                 </FormSection>
@@ -522,7 +545,7 @@ export function AutoInfracaoForm({ onBack, auditId }: AutoInfracaoFormProps) {
                 </div>
             </div>
             
-            {/* --- MODAIS DE ANEXO E VISUALIZAÇÃO --- */}
+            {/* --- MODAIS DE ANEXO E VISUALIZAÇÃO (Completo) --- */}
             {isAttachModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100]">
                     <div className="bg-white rounded-2xl p-6 m-4 w-full max-w-xs shadow-xl">
