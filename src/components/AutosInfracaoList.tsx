@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Search, AlertTriangle } from 'lucide-react';
-import { getAudits } from '../../../shared/utils/storage';
+import { getAudits } from '../lib/storage';
 
 interface AutosInfracaoListProps {
   onBack: () => void;

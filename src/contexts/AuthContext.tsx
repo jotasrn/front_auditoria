@@ -1,7 +1,13 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { getUser, saveUser, clearUser } from '../../shared/utils/storage';
-import { apiService } from '../../shared/services/apiService';
-import type { User } from '../../types';
+import { getUser, saveUser, clearUser } from '../lib/storage';
+import { apiService} from '../service/apiService.ts';
+
+// --- Interfaces de Tipagem ---
+interface User {
+    id: number;
+    full_name: string;
+    sigla: string;
+}
 
 interface AuthContextType {
     user: User | null;
@@ -19,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const signIn = async (username: string, password: string) => {
         setLoading(true);
-
+        
         try {
             const loginResponse = await apiService.login(username, password);
             const userId = loginResponse.data.id_usuario;
@@ -32,28 +38,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const nomeCompleto = funcDetails.NomeFuncionario ? String(funcDetails.NomeFuncionario).trim() : '';
             const newUser: User = {
                 id: userId,
-                full_name: nomeCompleto,
-                sigla: username,
+                full_name: nomeCompleto, 
+                sigla: username, 
             };
 
-            saveUser(newUser);
+            saveUser(newUser); 
             setUser(newUser);
-
+            
         } catch (error: any) {
             const errorMessage = error.message || 'Erro desconhecido.';
             console.error('Erro no login:', errorMessage, error.response?.data);
             throw new Error(errorMessage);
-
+            
         } finally {
             setLoading(false);
         }
     };
 
+    /** Realiza o logout: limpa o estado e o cache local. */
     const signOut = async () => {
         setUser(null);
         clearUser();
     };
 
+    /** Atualiza o objeto do usuário no contexto e no cache. */
     const updateUser = async (userData: User) => {
         saveUser(userData);
         setUser(userData);

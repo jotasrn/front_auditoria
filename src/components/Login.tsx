@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useAuth } from '../../../app/providers/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Lock, User } from 'lucide-react';
-import logoSemob from '../../../assets/images/logo.png';
-import { ErrorPopup, PopupType } from '../../../shared/components/molecules/ErrorPopup';
+import logoSemob from '../assets/images/logo.png';
+import { ErrorPopup, PopupType } from './ErrorPopup';
 
 export function Login() {
     const [username, setUsername] = useState('');
@@ -90,6 +90,7 @@ export function Login() {
                 </div>
             </div>
 
+            {/* Renderiza o popup de erro/sucesso */}
             {popup && (
                 <ErrorPopup
                     message={popup.message}

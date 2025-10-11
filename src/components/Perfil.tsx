@@ -1,8 +1,7 @@
 import { ArrowLeft, User, Briefcase, RefreshCw, LogOut } from 'lucide-react';
-import { useAuth } from '../../../app/providers/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
-import { apiService } from '../../../shared/services/apiService';
-import type { FuncionarioDetalhe } from '../../../types';
+import { apiService, FuncionarioDetalhe } from '../service/apiService.ts'; 
 
 interface PerfilProps {
     onBack: () => void;
@@ -71,6 +70,7 @@ export function Perfil({ onBack }: PerfilProps) {
 
     return (
         <div className="min-h-screen bg-slate-50">
+            {/* Cabeçalho */}
             <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white shadow-lg sticky top-0 z-40">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6">
                     <div className="flex items-center justify-between py-3 sm:py-4">
@@ -83,6 +83,7 @@ export function Perfil({ onBack }: PerfilProps) {
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
+                {/* Cartão de Identificação Principal */}
                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center">
                     <div className="w-20 h-20 mx-auto mb-4 bg-blue-600 text-white rounded-full flex items-center justify-center">
                         <User className="w-10 h-10" />
@@ -90,6 +91,7 @@ export function Perfil({ onBack }: PerfilProps) {
                     <h2 className="text-xl font-extrabold text-slate-900">{displayFullName}</h2>
                     <p className="text-sm font-semibold text-slate-600">{user.sigla}</p>
 
+                    {/* Botão de Atualizar Dados */}
                     <button
                         onClick={handleRefreshDetails}
                         disabled={loading}
@@ -101,6 +103,7 @@ export function Perfil({ onBack }: PerfilProps) {
                     {refreshError && <p className="text-xs text-red-500 mt-2">{refreshError}</p>}
                 </div>
 
+                {/* Seção de Detalhes */}
                 <div className="space-y-4">
                     <h3 className="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2">Detalhes da Conta</h3>
 
@@ -108,6 +111,7 @@ export function Perfil({ onBack }: PerfilProps) {
                     <DataField icon={Briefcase} label="Usuário" value={user.sigla} />
                 </div>
 
+                {/* Botão de Logout */}
                 <button
                     onClick={signOut}
                     className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold transition active:scale-95 hover:bg-red-700 mt-6 flex items-center justify-center gap-2"

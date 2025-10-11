@@ -1,4 +1,4 @@
-import { FileText, Car, Ban, User, AlertTriangle, Home } from 'lucide-react';
+import { FileText, Car, Ban, User, AlertTriangle, Home } from 'lucide-react'; // Adicione Home
 
 interface BottomNavProps {
   activeTab: string;
@@ -6,7 +6,8 @@ interface BottomNavProps {
 }
 
 const navItems = [
-  { id: 'inicio', label: 'Início', icon: Home },
+  // Novo item "Início"
+  { id: 'inicio', label: 'Início', icon: Home }, 
   { id: 'stpc', label: 'STPC', icon: AlertTriangle },
   { id: 'taxi', label: 'Táxi', icon: Car },
   { id: 'stip', label: 'STIP', icon: FileText },
