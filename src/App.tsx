@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { Login } from './components/Login';
-import { AutosInfracaoList } from './components/AutosInfracaoList';
-import { AutoInfracaoForm } from './components/AutoInfracaoForm';
-import { Perfil } from './components/Perfil';
-import { AutoInfracaoView } from './components/AutoInfracaoView';
-import { BottomNav } from './components/BottomNav';
-import { InDevelopment } from './components/EmDesenvolvimento';
-import { Dashboard } from './components/Dashboard';
-
-type StpcPage = 'list' | 'view' | 'form';
-type MainTab = 'inicio' | 'stpc' | 'taxi' | 'stip' | 'pirataria' | 'perfil';
+import { AuthProvider, useAuth } from './app/providers/AuthContext';
+import { Login } from './features/auditoria/pages/Login';
+import { AutosInfracaoList } from './features/auditoria/components/AutosInfracaoList';
+import { AutoInfracaoForm } from './features/auditoria/components/AutoInfracaoForm';
+import { Perfil } from './features/perfil/pages/Perfil';
+import { AutoInfracaoView } from './features/auditoria/components/AutoInfracaoView';
+import { BottomNav } from './shared/components/organisms/BottomNav';
+import { InDevelopment } from './shared/components/organisms/InDevelopment';
+import { Dashboard } from './shared/components/organisms/Dashboard';
+import type { StpcPage, MainTab } from './types';
 
 function AppContent() {
     const { user } = useAuth();

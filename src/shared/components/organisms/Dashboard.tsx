@@ -8,7 +8,7 @@ import {
   Grid2x2 as Grid,
   ClipboardCheck
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../../app/providers/AuthContext';
 
 interface DashboardProps {
   onNavigate: (tab: string) => void;
@@ -35,9 +35,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
     return 'Boa noite';
   };
 
-  // Função para obter apenas o primeiro nome de forma segura
   const getFirstName = () => {
-    // user?.full_name? -> garante que user E full_name existem antes de chamar split()
     return user?.full_name?.split(' ')[0] || user?.sigla || 'Usuário';
   };
 

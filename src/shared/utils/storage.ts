@@ -1,33 +1,25 @@
-// src/lib/storage.ts
+import type { User, AutoInfracao } from '../../types';
 
 const AUDITS_STORAGE_KEY = 'semob_audits';
 const USER_STORAGE_KEY = 'semob_user';
 
-interface StoredUser {
-    id: number; 
-    full_name: string;
-    sigla: string;
-}
-
-export const mockInitialUser: StoredUser = {
+export const mockInitialUser: User = {
     id: 1560,
     full_name: 'Usuário Não Autenticado',
     sigla: 'GUEST'
 };
 
-// --- Funções para Auditorias ----
-
-export const getAudits = (): any[] => {
+export const getAudits = (): AutoInfracao[] => {
     const data = localStorage.getItem(AUDITS_STORAGE_KEY);
     return data ? JSON.parse(data) : [];
 };
 
-export const getAuditById = (id: string): any | null => {
+export const getAuditById = (id: string): AutoInfracao | null => {
     const audits = getAudits();
     return audits.find(audit => audit.id === id) || null;
 };
 
-export const saveAudit = (auditData: any): void => {
+export const saveAudit = (auditData: AutoInfracao): void => {
     let audits = getAudits();
     const existingIndex = audits.findIndex(audit => audit.id === auditData.id);
 
@@ -40,12 +32,12 @@ export const saveAudit = (auditData: any): void => {
     localStorage.setItem(AUDITS_STORAGE_KEY, JSON.stringify(audits));
 };
 
-export const getUser = (): StoredUser | null => { 
+export const getUser = (): User | null => {
     const data = localStorage.getItem(USER_STORAGE_KEY);
-    return data ? JSON.parse(data) : null; 
+    return data ? JSON.parse(data) : null;
 }
 
-export const saveUser = (userData: StoredUser): void => {
+export const saveUser = (userData: User): void => {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
 }
 

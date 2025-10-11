@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Edit, Paperclip } from 'lucide-react';
-import { getAuditById } from '../lib/storage';
+import { getAuditById } from '../../../shared/utils/storage';
 
 interface AutoInfracaoViewProps {
   auditId: string;
@@ -8,7 +8,6 @@ interface AutoInfracaoViewProps {
   onEdit: (id: string) => void;
 }
 
-// Componente auxiliar para seções organizadas
 const ViewSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
     <h2 className="text-xl font-bold text-slate-800 mb-4 border-b pb-3">{title}</h2>
@@ -36,7 +35,6 @@ export function AutoInfracaoView({ auditId, onBack, onEdit }: AutoInfracaoViewPr
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 pb-20">
-      {/* Cabeçalho */}
       <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white shadow-lg sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between py-3 sm:py-4">
@@ -60,9 +58,7 @@ export function AutoInfracaoView({ auditId, onBack, onEdit }: AutoInfracaoViewPr
         </div>
       </div>
 
-      {/* Conteúdo */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        {/* Informações Gerais */}
         <ViewSection title="Informações Gerais">
           <p>
             <strong className="font-semibold text-gray-600 w-40 inline-block">
@@ -84,7 +80,6 @@ export function AutoInfracaoView({ auditId, onBack, onEdit }: AutoInfracaoViewPr
           </p>
         </ViewSection>
 
-        {/* Dados do Veículo */}
         <ViewSection title="Dados do Veículo">
           <p>
             <strong className="font-semibold text-gray-600 w-40 inline-block">Nº do Veículo:</strong>
@@ -108,7 +103,6 @@ export function AutoInfracaoView({ auditId, onBack, onEdit }: AutoInfracaoViewPr
           </p>
         </ViewSection>
 
-        {/* Dados do Preposto */}
         <ViewSection title="Dados do Preposto">
           <p>
             <strong className="font-semibold text-gray-600 w-40 inline-block">Nome:</strong>
@@ -120,7 +114,6 @@ export function AutoInfracaoView({ auditId, onBack, onEdit }: AutoInfracaoViewPr
           </p>
         </ViewSection>
 
-        {/* Dados da Linha */}
         <ViewSection title="Dados da Linha">
           <p>
             <strong className="font-semibold text-gray-600 w-40 inline-block">Código da Linha:</strong>
@@ -132,7 +125,6 @@ export function AutoInfracaoView({ auditId, onBack, onEdit }: AutoInfracaoViewPr
           </p>
         </ViewSection>
 
-        {/* Local da Infração */}
         <ViewSection title="Local da Infração">
           <p>
             <strong className="font-semibold text-gray-600 w-40 inline-block">
@@ -148,7 +140,6 @@ export function AutoInfracaoView({ auditId, onBack, onEdit }: AutoInfracaoViewPr
           </p>
         </ViewSection>
 
-        {/* Dados da Infração */}
         <ViewSection title="Dados da Infração">
           <p>
             <strong className="font-semibold text-gray-600 w-40 inline-block">Infração:</strong>
@@ -162,7 +153,6 @@ export function AutoInfracaoView({ auditId, onBack, onEdit }: AutoInfracaoViewPr
           </p>
         </ViewSection>
 
-        {/* Anexos */}
         <ViewSection title="Anexos">
           {audit.attachment_names && audit.attachment_names.length > 0 ? (
             audit.attachment_names.map((name: string, i: number) => (
